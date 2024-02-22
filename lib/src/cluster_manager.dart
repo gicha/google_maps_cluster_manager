@@ -87,7 +87,7 @@ class ClusterManager<T extends ClusterItem> {
   }
 
   /// Update all cluster items
-  void setItems(List<T> newItems) {
+  void setItems(Iterable<T> newItems) {
     _items = newItems;
     updateMap();
   }
@@ -167,7 +167,6 @@ class ClusterManager<T extends ClusterItem> {
         return i + 1;
       }
     }
-
     return 1;
   }
 
@@ -177,7 +176,6 @@ class ClusterManager<T extends ClusterItem> {
         return levels[i].toInt();
       }
     }
-
     return 1;
   }
 
