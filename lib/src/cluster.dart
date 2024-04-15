@@ -6,12 +6,11 @@ class Cluster<T extends ClusterItem> {
   Cluster(this.items, this.location);
 
   Cluster.fromItems(this.items)
-      : location = items.fold<LatLng>(
-          LatLng(0.0, 0.0),
-          (p, c) => LatLng(
-            (p.latitude + c.location.latitude) / items.length,
-            (p.longitude + c.location.longitude) / items.length,
-          ),
+      : location = LatLng(
+          items.fold<double>(0.0, (p, c) => p + c.location.latitude) /
+              items.length,
+          items.fold<double>(0.0, (p, c) => p + c.location.longitude) /
+              items.length,
         );
 
   //location becomes weighted average lat lon
