@@ -127,7 +127,7 @@ class ClusterManager<T extends ClusterItem> {
         items.where((i) => inflatedBounds.contains(i.location));
 
     if (stopClusteringZoom != null && _zoom >= stopClusteringZoom!) {
-      return visibleItems.map((i) => Cluster<T>.fromItems([i])).toList();
+      return visibleItems.map((i) => Cluster<T>.fromItems([i]));
     }
 
     Iterable<Cluster<T>> markers;
@@ -135,15 +135,13 @@ class ClusterManager<T extends ClusterItem> {
     if (clusterAlgorithm == ClusterAlgorithm.geohash ||
         visibleItems.length >= maxItemsForMaxDistAlgo) {
       final int level = _findLevel(levels);
-      markers = _computeClusters(
+      return _computeClusters(
         visibleItems,
         level: level,
       );
     } else {
-      markers = _computeClustersWithMaxDist(visibleItems.toList(), _zoom);
+      return _computeClustersWithMaxDist(visibleItems.toList(), _zoom);
     }
-
-    return markers;
   }
 
   LatLngBounds _inflateBounds(LatLngBounds bounds) {
