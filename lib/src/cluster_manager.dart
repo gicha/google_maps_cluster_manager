@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_cluster_manager/google_maps_cluster_manager.dart';
 import 'package:google_maps_cluster_manager/src/cluster.dart';
 import 'package:google_maps_cluster_manager/src/max_dist_clustering.dart';
-import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart'
-    hide Cluster;
+import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart' hide Cluster;
 
 enum ClusterAlgorithm { geohash, maxDist }
 
@@ -83,8 +82,7 @@ class ClusterManager<T extends ClusterItem> {
   Future<void> _updateClusters([LatLngBounds? bounds]) async {
     final Iterable<Cluster<T>> mapMarkers = await getMarkers(bounds);
 
-    final Set<Marker> markers =
-        Set.from(await Future.wait(mapMarkers.map((m) => markerBuilder(m))));
+    final Set<Marker> markers = Set.from(await Future.wait(mapMarkers.map((m) => markerBuilder(m))));
 
     updateMarkers(markers);
   }
@@ -101,6 +99,13 @@ class ClusterManager<T extends ClusterItem> {
     updateMap();
   }
 
+  /// Remove cluster item
+  void removeItem(ClusterItem itemToRemove) {
+    final _items = items.toList();
+    _items.remove(itemToRemove);
+    setItems(_items);
+  }
+
   /// Method called on camera move
   void onCameraMove(CameraPosition position, {bool forceUpdate = false}) {
     _zoom = position.zoom;
@@ -113,9 +118,7 @@ class ClusterManager<T extends ClusterItem> {
   Future<Iterable<Cluster<T>>> getMarkers([LatLngBounds? bounds]) async {
     if (_mapId == null) return List.empty();
 
-    final LatLngBounds mapBounds = bounds ??
-        await GoogleMapsFlutterPlatform.instance
-            .getVisibleRegion(mapId: _mapId!);
+    final LatLngBounds mapBounds = bounds ?? await GoogleMapsFlutterPlatform.instance.getVisibleRegion(mapId: _mapId!);
 
     late LatLngBounds inflatedBounds;
     if (clusterAlgorithm == ClusterAlgorithm.geohash) {
@@ -124,13 +127,11 @@ class ClusterManager<T extends ClusterItem> {
       inflatedBounds = mapBounds;
     }
 
-    final Iterable<T> visibleItems =
-        items.where((i) => inflatedBounds.contains(i.location));
+    final Iterable<T> visibleItems = items.where((i) => inflatedBounds.contains(i.location));
 
     Iterable<Cluster<T>> markers;
 
-    if (clusterAlgorithm == ClusterAlgorithm.geohash ||
-        visibleItems.length >= maxItemsForMaxDistAlgo) {
+    if (clusterAlgorithm == ClusterAlgorithm.geohash || visibleItems.length >= maxItemsForMaxDistAlgo) {
       final int level = _findLevel(levels);
       markers = _computeClusters(
         visibleItems,
@@ -153,27 +154,20 @@ class ClusterManager<T extends ClusterItem> {
     // Bounds that cross the date line expand compared to their difference with the date line
     double lng = 0;
     if (bounds.northeast.longitude < bounds.southwest.longitude) {
-      lng = extraPercent *
-          ((180.0 - bounds.southwest.longitude) +
-              (bounds.northeast.longitude + 180));
+      lng = extraPercent * ((180.0 - bounds.southwest.longitude) + (bounds.northeast.longitude + 180));
     } else {
-      lng = extraPercent *
-          (bounds.northeast.longitude - bounds.southwest.longitude);
+      lng = extraPercent * (bounds.northeast.longitude - bounds.southwest.longitude);
     }
 
     // Latitudes expanded beyond +/- 90 are automatically clamped by LatLng
-    final double lat =
-        extraPercent * (bounds.northeast.latitude - bounds.southwest.latitude);
+    final double lat = extraPercent * (bounds.northeast.latitude - bounds.southwest.latitude);
 
-    final double eLng =
-        (bounds.northeast.longitude + lng).clamp(-_maxLng, _maxLng);
-    final double wLng =
-        (bounds.southwest.longitude - lng).clamp(-_maxLng, _maxLng);
+    final double eLng = (bounds.northeast.longitude + lng).clamp(-_maxLng, _maxLng);
+    final double wLng = (bounds.southwest.longitude - lng).clamp(-_maxLng, _maxLng);
 
     return LatLngBounds(
       southwest: LatLng(bounds.southwest.latitude - lat, wLng),
-      northeast:
-          LatLng(bounds.northeast.latitude + lat, lng != 0 ? eLng : _maxLng),
+      northeast: LatLng(bounds.northeast.latitude + lat, lng != 0 ? eLng : _maxLng),
     );
   }
 
@@ -219,20 +213,19 @@ class ClusterManager<T extends ClusterItem> {
     return clusteredMarkers.values.map(Cluster<T>.fromItems);
   }
 
-  static Future<Marker> Function(Cluster) get _basicMarkerBuilder =>
-      (cluster) async => Marker(
-            markerId: MarkerId(cluster.getId()),
-            position: cluster.location,
-            onTap: () {
-              if (kDebugMode) {
-                print(cluster);
-              }
-            },
-            icon: await _getBasicClusterBitmap(
-              cluster.isMultiple ? 125 : 75,
-              text: cluster.isMultiple ? cluster.count.toString() : null,
-            ),
-          );
+  static Future<Marker> Function(Cluster) get _basicMarkerBuilder => (cluster) async => Marker(
+        markerId: MarkerId(cluster.getId()),
+        position: cluster.location,
+        onTap: () {
+          if (kDebugMode) {
+            print(cluster);
+          }
+        },
+        icon: await _getBasicClusterBitmap(
+          cluster.isMultiple ? 125 : 75,
+          text: cluster.isMultiple ? cluster.count.toString() : null,
+        ),
+      );
 
   static Future<BitmapDescriptor> _getBasicClusterBitmap(
     int size, {
